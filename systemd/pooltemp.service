@@ -1,0 +1,46 @@
+[Unit]
+Description=Pool Temperature Logger Service
+Documentation='Pool temperature monitoring and logging to PostgreSQL'
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/root
+
+# Environment file containing sensitive configuration
+EnvironmentFile=/etc/pool-logger/pool-logger.env
+
+# Execute the improved pool logger script
+ExecStart=/bin/bash -c 'source /root/iaqualink_env/bin/activate && python3 -u pool_temp_logger.py'
+
+# Restart configuration
+Restart=always
+RestartSec=30
+StartLimitInterval=300
+StartLimitBurst=5
+
+# Logging configuration
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pool-temp-logger
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/var/log /tmp
+
+# Resource limits
+MemoryMax=256M
+CPUQuota=50%
+
+# Graceful shutdown
+TimeoutStopSec=30
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target
+
